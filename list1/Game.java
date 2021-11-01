@@ -7,14 +7,7 @@ class Game{
         int board_side = 4;
         List<Integer> permutation = generate_permutation(board_side);
         int[][] board = fill_board(board_side, permutation);
-
-        System.out.println(permutation);
-
-        for (int i=0; i<board_side; i++) {
-            for (int j=0; j<board_side; j++) {
-                System.out.println(board[i][j]);
-            }
-        }
+        print_board(board, board_side);
 
     }  
 
@@ -37,11 +30,28 @@ class Game{
 
         for (int i=0; i<board_side; i++) {
             for (int j=0; j<board_side; j++) {
+                if (i == board_side-1 && j == board_side-1) {
+                    board[i][j] = 0;
+                }
                 board[i][j] = permutation.get(permutation_counter++);
             }
         }
 
         return board;
+    }
+
+        private static void print_board(int[][] board, int board_side) {
+
+        System.out.println("\n");
+
+        for (int i=0; i<board_side; i++) {
+
+            for (int j=0; j<board_side; j++) {
+                System.out.printf("[%02d] ", board[i][j]);
+            }
+            System.out.println("\n");
+
+        }
     }
 }  
 
