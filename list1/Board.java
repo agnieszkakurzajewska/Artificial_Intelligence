@@ -57,8 +57,15 @@ class Board{
                 }        
             }
             System.out.println("\n");
-
         }
+    }
+
+    public int[] get_blank_position() {
+        return this.where_is_blank;
+    }
+
+    public int get_board_side() {
+        return this.board_side;
     }
 
 }
