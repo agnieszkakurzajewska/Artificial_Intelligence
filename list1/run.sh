@@ -1,2 +1,2 @@
-javac Game.java
+javac *.java
 java Game
