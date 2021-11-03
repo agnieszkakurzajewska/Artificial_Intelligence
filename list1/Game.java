@@ -8,42 +8,46 @@ class Game{
         int board_side = 4;
         Board current_board = new Board(board_side, true);
         Board target_board = new Board(board_side, false);
-        
-        while(calculate_taxicabs(current_board, target_board) != 0) {
+        List<Integer> switch_history = new ArrayList<Integer>();
+        //while(calculate_taxicabs(current_board, target_board) != 0) {
+        for(int j = 0; j<300; j++) {
+
             current_board.print();
-            make_next_move(current_board, target_board);
+            make_next_move(switch_history, current_board, target_board);
         }
 
-            //         current_board.print();
-            // make_next_move(current_board, target_board);
-            //             current_board.print();
-            // make_next_move(current_board, target_board);
-            //              current_board.print();
-            // make_next_move(current_board, target_board);
-            //             current_board.print();
-            // make_next_move(current_board, target_board);
-            //             current_board.print();
-            // make_next_move(current_board, target_board);
-            //             current_board.print();
-            // make_next_move(current_board, target_board);
+
+            for (int i=0; i< switch_history.size(); i++) {
+            System.out.printf(switch_history.get(i)+", ");
+
+            }
+            System.out.println("");
+
 
     }  
 
-    private static void make_next_move(Board current_board, Board target_board) {
+    private static void make_next_move(List<Integer> switch_history, Board current_board, Board target_board) {
 
-        List<Integer> blank_neighborhood = get_blank_neighborhood(current_board);
-        // for (int m = 0; m< blank_neighborhood.size(); m++) {
-        //     System.out.println(blank_neighborhood.get(m));
-
-        // }
+        List<Integer> blank_neighborhood = get_blank_neighborhood(current_board, switch_history);
         List<Integer> taxicabs = new ArrayList<Integer>();
-
+        List<Integer> matches = new ArrayList<Integer>();
+        List<Integer> h = new ArrayList<Integer>();
+        
         for (int i =0; i<blank_neighborhood.size(); i++) {
-                    taxicabs.add(calculate_taxicab_for_case(blank_neighborhood.get(i), current_board, target_board));
+            taxicabs.add(calculate_taxicab_for_case(blank_neighborhood.get(i), current_board, target_board));
+            matches.add(calculate_matches_for_case(blank_neighborhood.get(i), current_board, target_board));
         }
-        int minVal = Collections.min(taxicabs); // should return 7
-        int best_switch = taxicabs.indexOf(minVal); 
+
+        for (int j=0; j<matches.size(); j++) {
+            h.add(matches.get(j) + taxicabs.get(j));
+        }
+        int minVal = Collections.min(h);
+        int best_switch = h.indexOf(minVal); 
+
+        switch_history.add(blank_neighborhood.get(best_switch));
         switch_with_blank(blank_neighborhood.get(best_switch), current_board, target_board);
+        System.out.println("taxicab + matches: "+minVal);
+
     }
 
     private static void switch_with_blank(int value, Board current_board, Board target_board) {
@@ -68,24 +72,60 @@ class Game{
             return taxicab;
     }
 
-    private static List<Integer> get_blank_neighborhood(Board current_board) {
+    private static int calculate_matches_for_case(int value, Board current_board, Board target_board) {
+
+            int[] blank_position = current_board.get_blank_position();
+            int[] neighbor_position = get_current_position(value, current_board, target_board);
+            int matches = 0;
+            current_board.board[neighbor_position[0]][neighbor_position[1]] = 0;
+            current_board.board[blank_position[0]][blank_position[1]] = value;
+            matches = calculate_matches(current_board, target_board);
+            current_board.board[neighbor_position[0]][neighbor_position[1]] = value;
+            current_board.board[blank_position[0]][blank_position[1]] = 0;
+
+            return matches;
+    }
+    private static List<Integer> get_blank_neighborhood(Board current_board, List<Integer> switch_history) {
 
         List<Integer> neighborhood = new ArrayList<>();
         List<Integer> surroundings = new ArrayList<>();
 
         int[] blank_position = current_board.get_blank_position();
         
+        int a = 0;
+        int b = 0;
+        if (switch_history.size() == 1) {
+            a = switch_history.get(switch_history.size()-1);
+        }
+        else if (switch_history.size() >= 2) {
+            a = switch_history.get(switch_history.size()-1);
+            b = switch_history.get(switch_history.size()-1);
+
+        }
+        int num = 0;
         if(blank_position[1]+1 <= 3) {
-            surroundings.add(current_board.board[blank_position[0]][blank_position[1]+1]);
+            num = current_board.board[blank_position[0]][blank_position[1]+1];
+            if (num != a && num != b) {
+                surroundings.add(num);
+            }
         }
         if(blank_position[1]-1 >= 0) {
-            surroundings.add(current_board.board[blank_position[0]][blank_position[1]-1]);
+            num = current_board.board[blank_position[0]][blank_position[1]-1];
+            if (num != a && num != b) {
+                surroundings.add(num);
+            }
         }
         if(blank_position[0]+1 <= 3) {
-            surroundings.add(current_board.board[blank_position[0]+1][blank_position[1]]);
+            num = current_board.board[blank_position[0]+1][blank_position[1]];
+            if (num != a && num != b) {
+                surroundings.add(num);
+            }
         }
         if(blank_position[0]-1 >= 0) {
-            surroundings.add(current_board.board[blank_position[0]-1][blank_position[1]]);
+            num = current_board.board[blank_position[0]-1][blank_position[1]];
+            if (num != a && num != b) {
+                surroundings.add(num);
+            }
         }
 
         return surroundings;
@@ -98,11 +138,28 @@ class Game{
 
         for (int i=0; i<side; i++) {
             for (int j=0; j<side; j++) {
-                int[] target_position = get_target_position(current_board.board[i][j], current_board, target_board);
-                sum = sum + Math.abs(i-target_position[0])+Math.abs(j-target_position[1]);
+                if (current_board.board[i][j] != 0) {
+                    int[] target_position = get_target_position(current_board.board[i][j], current_board, target_board);
+                    sum = sum + Math.abs(i-target_position[0])+Math.abs(j-target_position[1]);
+                }
             }
         }
         return sum;
+    }
+
+    private static int calculate_matches(Board current_board, Board target_board) {
+
+        int side = current_board.get_board_side();
+        int sum = 0;
+
+        for (int i=0; i<side; i++) {
+            for (int j=0; j<side; j++) {
+                if (current_board.board[i][j] == target_board.board[i][j]) {
+                    sum++;
+                }
+            }
+        }
+        return 16-sum;
     }
 
     private static int[] get_target_position(int value, Board current_board, Board target_board) {
