@@ -61,8 +61,18 @@ class Board{
     }
 
     public int[] get_blank_position() {
-        return this.where_is_blank;
-    }
+
+        int[] blank_position = {3, 3};
+        for (int i=0; i<get_board_side(); i++) {
+            for (int j=0; j<get_board_side(); j++) {
+                if (board[i][j] == 0) {
+                    blank_position[0] = i;
+                    blank_position[1] = j;
+                }
+            }
+        }  
+        return blank_position;
+    } 
 
     public int get_board_side() {
         return this.board_side;
