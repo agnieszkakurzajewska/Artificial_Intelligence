@@ -1,32 +1,61 @@
 import java.util.*;
 import static java.lang.Math.*;
+import java.util.Random;
 
 class Game{  
     //[][] first - row, second - column
     public static void main(String args[]){   
 
         int board_side = 4;
-        Board current_board = new Board(board_side, true);
         Board target_board = new Board(board_side, false);
-        List<Integer> switch_history = new ArrayList<Integer>();
-        //while(calculate_taxicabs(current_board, target_board) != 0) {
-        for(int j = 0; j<300; j++) {
+        Board mixed_board = new Board(board_side, false);
+        List<Integer> switch_history1 = new ArrayList<Integer>();
+        List<Integer> switch_history2 = new ArrayList<Integer>();
 
-            current_board.print();
-            make_next_move(switch_history, current_board, target_board);
+        //mixing
+        mix_x_times(10, mixed_board, switch_history1, target_board);
+
+        System.out.println("-------------------------------------------------");
+
+        //unmixing xD
+        int taxicabs = 1;
+        while (taxicabs != 0) {
+            taxicabs = make_next_move(switch_history2, mixed_board, target_board);
+            System.out.println("taxicabs: "+taxicabs);
+            mixed_board.print();
         }
-
-
-            for (int i=0; i< switch_history.size(); i++) {
-            System.out.printf(switch_history.get(i)+", ");
-
-            }
-            System.out.println("");
-
+        print_switch_history(switch_history1);
+        print_switch_history(switch_history2);
 
     }  
 
-    private static void make_next_move(List<Integer> switch_history, Board current_board, Board target_board) {
+    private static void mix_x_times(int how_many_times, Board mixed_board,  List<Integer> switch_history, Board target_board) {
+        for(int j = 0; j<how_many_times; j++) {
+            mixed_board.print();
+            mix(switch_history, mixed_board, target_board);
+        }
+    }
+
+    private static void mix(List<Integer> switch_history, Board mixed_board, Board target_board) {
+
+        Random rand = new Random();
+        List<Integer> blank_neighborhood = get_blank_neighborhood(mixed_board, switch_history);
+        int random = rand.nextInt(blank_neighborhood.size());
+        switch_history.add(blank_neighborhood.get(random));
+        switch_with_blank(blank_neighborhood.get(random), mixed_board, target_board);
+    }
+
+
+    private static void switch_with_blank(int value, Board current_board, Board target_board) {
+
+            int[] blank_position = current_board.get_blank_position();
+            int[] neighbor_position = get_current_position(value, current_board, target_board);
+            current_board.board[neighbor_position[0]][neighbor_position[1]] = 0;
+            current_board.board[blank_position[0]][blank_position[1]] = value;
+    }
+
+
+    private static int make_next_move(List<Integer> switch_history, Board current_board, Board target_board) {
 
         List<Integer> blank_neighborhood = get_blank_neighborhood(current_board, switch_history);
         List<Integer> taxicabs = new ArrayList<Integer>();
@@ -39,24 +68,20 @@ class Game{
         }
 
         for (int j=0; j<matches.size(); j++) {
-            h.add(matches.get(j) + taxicabs.get(j));
+            h.add(taxicabs.get(j));
+            //            h.add(matches.get(j) + taxicabs.get(j));
+
         }
+        
         int minVal = Collections.min(h);
         int best_switch = h.indexOf(minVal); 
 
         switch_history.add(blank_neighborhood.get(best_switch));
         switch_with_blank(blank_neighborhood.get(best_switch), current_board, target_board);
-        System.out.println("taxicab + matches: "+minVal);
+        return minVal;
 
     }
 
-    private static void switch_with_blank(int value, Board current_board, Board target_board) {
-
-            int[] blank_position = current_board.get_blank_position();
-            int[] neighbor_position = get_current_position(value, current_board, target_board);
-            current_board.board[neighbor_position[0]][neighbor_position[1]] = 0;
-            current_board.board[blank_position[0]][blank_position[1]] = value;
-    }
 
     private static int calculate_taxicab_for_case(int value, Board current_board, Board target_board) {
 
@@ -90,14 +115,13 @@ class Game{
         List<Integer> neighborhood = new ArrayList<>();
         List<Integer> surroundings = new ArrayList<>();
 
-        int[] blank_position = current_board.get_blank_position();
-        
+        int[] blank_position = current_board.get_blank_position();        
         int a = 0;
         int b = 0;
         if (switch_history.size() == 1) {
-            a = switch_history.get(switch_history.size()-1);
+            a = switch_history.get(0);
         }
-        else if (switch_history.size() >= 2) {
+        else if (switch_history.size() > 1) {
             a = switch_history.get(switch_history.size()-1);
             b = switch_history.get(switch_history.size()-1);
 
@@ -127,7 +151,6 @@ class Game{
                 surroundings.add(num);
             }
         }
-
         return surroundings;
     }
 
@@ -192,5 +215,14 @@ class Game{
         }
         return current_position;
     }
+
+    private static void  print_switch_history (List<Integer> switch_history) {
+        System.out.printf(switch_history.size()+" switches: \n");
+        for (int i=0; i< switch_history.size(); i++) {
+            System.out.printf(switch_history.get(i)+" ");
+        }
+        System.out.printf("\n\n");
+    }
+
 }  
 

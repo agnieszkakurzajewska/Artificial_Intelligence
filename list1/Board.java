@@ -10,7 +10,7 @@ class Board{
     public Board(int side, boolean should_be_mixed) {
         this.board_side = side;
         this.where_is_blank[0] = this.where_is_blank[1] = 3;
-        this.board = fill_board(board_side, generate_permutation(board_side, should_be_mixed));
+        this.board = fill_board_random(board_side, generate_permutation(board_side, should_be_mixed));
     }
 
     private static List<Integer> generate_permutation(int board_side, boolean should_be_mixed) {
@@ -27,7 +27,7 @@ class Board{
         return permutation; 
     }
 
-    private static int[][] fill_board(int board_side, List<Integer> permutation) {
+    private static int[][] fill_board_random(int board_side, List<Integer> permutation) {
 
         int[][] board = new int[board_side][board_side];
         int permutation_counter = 0;
@@ -60,6 +60,7 @@ class Board{
         }
     }
 
+
     public int[] get_blank_position() {
 
         int[] blank_position = {3, 3};
@@ -77,5 +78,4 @@ class Board{
     public int get_board_side() {
         return this.board_side;
     }
-
 }
