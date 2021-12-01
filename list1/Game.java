@@ -13,15 +13,16 @@ class Game{
         List<Integer> switch_history2 = new ArrayList<Integer>();
 
         //mixing
-        mix_x_times(15, mixed_board, switch_history1, target_board);
+        mix_x_times(10, mixed_board, switch_history1, target_board);
         System.out.println("-------------------------------------------------");
 
         //unmixing xD
-        int taxicabs = 1;
-        while (taxicabs != 0) {
-            taxicabs = make_next_move(switch_history2, mixed_board, target_board);
-            //System.out.println("taxicabs: "+taxicabs);
-            //mixed_board.print();
+        int matches = 1;
+        while (matches != 0) {
+            make_next_move(switch_history2, mixed_board, target_board);
+            matches = calculate_matches(mixed_board, target_board);
+            System.out.println("matches: "+matches);
+            mixed_board.print();
         }
         print_switch_history(switch_history1);
         print_switch_history(switch_history2);
@@ -30,7 +31,7 @@ class Game{
 
     private static void mix_x_times(int how_many_times, Board mixed_board,  List<Integer> switch_history, Board target_board) {
         for(int j = 0; j<how_many_times; j++) {
-            //mixed_board.print();
+            mixed_board.print();
             mix(switch_history, mixed_board, target_board);
         }
     }
@@ -54,7 +55,7 @@ class Game{
     }
 
 
-    private static int make_next_move(List<Integer> switch_history, Board current_board, Board target_board) {
+    private static void make_next_move(List<Integer> switch_history, Board current_board, Board target_board) {
 
         List<Integer> blank_neighborhood = get_blank_neighborhood(current_board, switch_history);
         List<Integer> taxicabs = new ArrayList<Integer>();
@@ -71,19 +72,16 @@ class Game{
 
         for (int j=0; j<matches.size(); j++) {
             //h.add(taxicabs.get(j));
-            h.add(matches.get(j));
+            //h.add(matches.get(j));
             //h.add(matches.get(j) + taxicabs.get(j));
-            //h.add(matches.get(j) + taxicabs_plus.get(j));
+            h.add(matches.get(j) + taxicabs_plus.get(j));
 
         }
         
         int minVal = Collections.min(h);
         int best_switch = h.indexOf(minVal); 
-
         switch_history.add(blank_neighborhood.get(best_switch));
         switch_with_blank(blank_neighborhood.get(best_switch), current_board, target_board);
-        return minVal;
-
     }
 
 
