@@ -13,16 +13,15 @@ class Game{
         List<Integer> switch_history2 = new ArrayList<Integer>();
 
         //mixing
-        mix_x_times(10, mixed_board, switch_history1, target_board);
-
+        mix_x_times(15, mixed_board, switch_history1, target_board);
         System.out.println("-------------------------------------------------");
 
         //unmixing xD
         int taxicabs = 1;
         while (taxicabs != 0) {
             taxicabs = make_next_move(switch_history2, mixed_board, target_board);
-            System.out.println("taxicabs: "+taxicabs);
-            mixed_board.print();
+            //System.out.println("taxicabs: "+taxicabs);
+            //mixed_board.print();
         }
         print_switch_history(switch_history1);
         print_switch_history(switch_history2);
@@ -31,7 +30,7 @@ class Game{
 
     private static void mix_x_times(int how_many_times, Board mixed_board,  List<Integer> switch_history, Board target_board) {
         for(int j = 0; j<how_many_times; j++) {
-            mixed_board.print();
+            //mixed_board.print();
             mix(switch_history, mixed_board, target_board);
         }
     }
@@ -59,17 +58,22 @@ class Game{
 
         List<Integer> blank_neighborhood = get_blank_neighborhood(current_board, switch_history);
         List<Integer> taxicabs = new ArrayList<Integer>();
+        List<Integer> taxicabs_plus = new ArrayList<Integer>();
+
         List<Integer> matches = new ArrayList<Integer>();
         List<Integer> h = new ArrayList<Integer>();
         
         for (int i =0; i<blank_neighborhood.size(); i++) {
-            taxicabs.add(calculate_taxicab_for_case(blank_neighborhood.get(i), current_board, target_board));
+            taxicabs.add(calculate_taxicab_for_case(false, blank_neighborhood.get(i), current_board, target_board));
+            taxicabs_plus.add(calculate_taxicab_for_case(true, blank_neighborhood.get(i), current_board, target_board));
             matches.add(calculate_matches_for_case(blank_neighborhood.get(i), current_board, target_board));
         }
 
         for (int j=0; j<matches.size(); j++) {
-            h.add(taxicabs.get(j));
-            //            h.add(matches.get(j) + taxicabs.get(j));
+            //h.add(taxicabs.get(j));
+            h.add(matches.get(j));
+            //h.add(matches.get(j) + taxicabs.get(j));
+            //h.add(matches.get(j) + taxicabs_plus.get(j));
 
         }
         
@@ -83,14 +87,18 @@ class Game{
     }
 
 
-    private static int calculate_taxicab_for_case(int value, Board current_board, Board target_board) {
+    private static int calculate_taxicab_for_case(boolean with_right_el_check,int value, Board current_board, Board target_board) {
 
             int[] blank_position = current_board.get_blank_position();
             int[] neighbor_position = get_current_position(value, current_board, target_board);
             int taxicab = 0;
             current_board.board[neighbor_position[0]][neighbor_position[1]] = 0;
             current_board.board[blank_position[0]][blank_position[1]] = value;
-            taxicab = calculate_taxicabs(current_board, target_board);
+            if (with_right_el_check){
+                taxicab = calculate_taxicabs_plus(current_board, target_board);
+            } else {
+                taxicab = calculate_taxicabs(current_board, target_board);
+            }
             current_board.board[neighbor_position[0]][neighbor_position[1]] = value;
             current_board.board[blank_position[0]][blank_position[1]] = 0;
 
@@ -117,37 +125,31 @@ class Game{
 
         int[] blank_position = current_board.get_blank_position();        
         int a = 0;
-        int b = 0;
-        if (switch_history.size() == 1) {
-            a = switch_history.get(0);
-        }
-        else if (switch_history.size() > 1) {
+        if (switch_history.size() > 0) {
             a = switch_history.get(switch_history.size()-1);
-            b = switch_history.get(switch_history.size()-1);
-
         }
         int num = 0;
         if(blank_position[1]+1 <= 3) {
             num = current_board.board[blank_position[0]][blank_position[1]+1];
-            if (num != a && num != b) {
+            if (num != a) {
                 surroundings.add(num);
             }
         }
         if(blank_position[1]-1 >= 0) {
             num = current_board.board[blank_position[0]][blank_position[1]-1];
-            if (num != a && num != b) {
+            if (num != a) {
                 surroundings.add(num);
             }
         }
         if(blank_position[0]+1 <= 3) {
             num = current_board.board[blank_position[0]+1][blank_position[1]];
-            if (num != a && num != b) {
+            if (num != a) {
                 surroundings.add(num);
             }
         }
         if(blank_position[0]-1 >= 0) {
             num = current_board.board[blank_position[0]-1][blank_position[1]];
-            if (num != a && num != b) {
+            if (num != a) {
                 surroundings.add(num);
             }
         }
@@ -164,6 +166,29 @@ class Game{
                 if (current_board.board[i][j] != 0) {
                     int[] target_position = get_target_position(current_board.board[i][j], current_board, target_board);
                     sum = sum + Math.abs(i-target_position[0])+Math.abs(j-target_position[1]);
+                }
+            }
+        }
+        return sum;
+    }
+
+        private static int calculate_taxicabs_plus(Board current_board, Board target_board) {
+
+        int side = current_board.get_board_side();
+        int sum = 0;
+
+        for (int i=0; i<side; i++) {
+            for (int j=0; j<side; j++) {
+                if (current_board.board[i][j] != 0) {
+                    int[] target_position = get_target_position(current_board.board[i][j], current_board, target_board);
+                    sum = sum + Math.abs(i-target_position[0])+Math.abs(j-target_position[1]);
+                
+                    if (i+1<side) {
+                        int[] target_position_right = get_target_position(current_board.board[i+1][j], current_board, target_board);
+                        if (i+1 == target_position_right[0] && j == target_position_right[1]) {
+                            sum = sum-1;                   
+                        }
+                    }
                 }
             }
         }
